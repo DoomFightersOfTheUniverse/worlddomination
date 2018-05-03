@@ -5,7 +5,7 @@ import random
 script_dir = str(os.path.dirname(os.path.abspath(__file__)))
 lines = None
 
-data_dir = os.path.join(script_dir,'data')
+data_dir = os.path.join(script_dir, os.pardir, 'data')
 file_names = ['SN70807705-B-control-EM-2017-05-%02d.csv' % (i,) for i in range(1, 32)]
 
 def read_file(file_path, header_lines=3):
