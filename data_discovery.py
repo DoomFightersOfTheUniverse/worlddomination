@@ -26,9 +26,13 @@ def column(rows, index, function=str):
 
 
 def aritmeticalMedium(power):
+    sum = 0
+    power = list(power)
     for i in power:
-        sum += power
-    average = power/len(power)
+        print(i, len(i))
+        sum += i
+    average = sum/len(power)
+    return average
 
 
 def average_days(days):
@@ -65,9 +69,11 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.plot(time,power)
     plt.ylabel('%s.power' % file_name)
-    plt.show()
+    #plt.show()
 
     diff_power = [power[i + 1] - power[i] for i in range(len(power) - 1)]
     plt.plot(time[:-1],diff_power)
     plt.ylabel('%s.diff_power' % file_name)
-    plt.show()
+    #plt.show()
+
+    print(aritmeticalMedium([power]))
