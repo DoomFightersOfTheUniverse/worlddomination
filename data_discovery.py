@@ -25,6 +25,12 @@ def column(rows, index, function=str):
     return [function(r[index]) for r in rows]
 
 
+def aritmeticalMedium(power):
+    for i in power:
+        sum += power
+    average = power/len(power)
+
+
 def average_days(days):
     length = max(map(len, days))
     avg_day = [0] * length
