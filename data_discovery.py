@@ -14,7 +14,7 @@ def read_file(file_path, header_lines=3):
         lines = list(spamreader)
         headers = lines[:header_lines]
         data = lines[header_lines:]
-        return (headers, data) # test
+        return (headers, data)
 
 
 def print_row(row):
