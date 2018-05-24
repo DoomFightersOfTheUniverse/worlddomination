@@ -14,7 +14,7 @@ def read_file(file_path, header_lines=3):
         lines = list(spamreader)
         headers = lines[:header_lines]
         data = lines[header_lines:]
-        return (headers, data) # test
+        return (headers, data)
 
 
 def print_row(row):
@@ -24,12 +24,13 @@ def print_row(row):
 def column(rows, index, function=str):
     return [function(r[index]) for r in rows]
 
+#def median(power):
+
 
 def aritmeticalMedium(power):
     sum = 0
-    power = list(power)
     for i in power:
-        print(i, len(i))
+        print(i)
         sum += i
     average = sum/len(power)
     return average
@@ -69,11 +70,11 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.plot(time,power)
     plt.ylabel('%s.power' % file_name)
-    #plt.show()
+    plt.show()
 
     diff_power = [power[i + 1] - power[i] for i in range(len(power) - 1)]
     plt.plot(time[:-1],diff_power)
     plt.ylabel('%s.diff_power' % file_name)
-    #plt.show()
+    plt.show()
 
-    print(aritmeticalMedium([power]))
+    print(aritmeticalMedium(power))
