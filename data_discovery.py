@@ -24,12 +24,13 @@ def print_row(row):
 def column(rows, index, function=str):
     return [function(r[index]) for r in rows]
 
+#def median(power):
+
 
 def aritmeticalMedium(power):
     sum = 0
-    power = list(power)
     for i in power:
-        print(i, len(i))
+        print(i)
         sum += i
     average = sum/len(power)
     return average
@@ -76,4 +77,4 @@ if __name__ == '__main__':
     plt.ylabel('%s.diff_power' % file_name)
     #plt.show()
 
-    print(aritmeticalMedium([power]))
+    print(aritmeticalMedium(power))
