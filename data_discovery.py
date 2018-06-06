@@ -2,6 +2,7 @@
 import csv
 import os
 import random
+import numpy as np
 script_dir = str(os.path.dirname(os.path.abspath(__file__)))
 lines = None
 
@@ -68,7 +69,39 @@ if __name__ == '__main__':
     days = [None] * len(file_names)
 
     import matplotlib.pyplot as plt
+    from matplotlib.collections import LineCollection
+    from matplotlib.colors import ListedColormap, BoundaryNorm
+
+    power = np.array(power)
+    time = np.array(time)
+
+    # threshold = sum(power) / len(power)
+    threshold = min(power)+20
+    mask = power > threshold
+
+    points = np.array([time, power]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+    # Create a continuous norm to map from data points to colors
+    # norm = plt.Normalize(power.min(), power.max())
+
+    # plot(time, power, mask)
+
+    # cmap = ListedColormap(['r', 'g'])
+    # norm = BoundaryNorm([0, threshold, power.max()], cmap.N)
+    # lc = LineCollection(segments, cmap=cmap, norm=norm)
+    # lc.set_array(power)
+    # lc.set_linewidth(2)
+    # # line = .add_collection(lc)
+    # plt.colorbar(lc)
+    #
+    plt.axhline(y=threshold, color='r', linestyle=':')
+
+    # greater_than_threshold = [i for i, val in enumerate(ys) if val>threshold]
+    # ax.plot(mask, ys[mask],            linestyle='none', color='r', marker='o')
+
     plt.plot(time,power)
+    # plt.plot(time[mask], power[mask], linestyle='none', color='r', marker='o')
     plt.ylabel('%s.power' % file_name)
     plt.show()
 
