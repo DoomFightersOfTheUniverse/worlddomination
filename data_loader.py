@@ -17,3 +17,10 @@ def load_file(file=None, lines=[0, 1, 2, 3]):
     list = [ld.build_LineData(file, x) for x in lines]
     data = list[0] if len(list) == 1 else list
     return data
+
+def load_all_power(line):
+    power = []
+    for file_name in ld.file_names:
+        file = os.path.join(ld.data_dir, file_name)
+        data = ld.build_LineData(file, line)
+        power += data.apparent.power_pos
