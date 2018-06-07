@@ -11,8 +11,9 @@ class LineData:
         self.shared_data = None#SharedData
 
 def check_power(power):
-    if power < 0 or power > 7000:#TODO just guesses
-        raise Exception('Unexpected power: %s' % power)
+    for p in power:
+        if p < 0 or p > 7000:#TODO just guesses
+            raise Exception('Unexpected power: %s' % power)
     return power
 
 def check_energy(energy):
@@ -32,4 +33,5 @@ class SharedData:
         self.supply_frequency = None
 
 
-p = PowerData(0, 1, 0, 0)
+if __name__ == '__main__':
+    p = PowerData(0, 1, 0, 0)
