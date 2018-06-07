@@ -52,21 +52,21 @@ def build_LineData(file_path, phase):
     line_data.reactive = react_pe
     line_data.apparent = apparent_pe
     if index==0:
-        current_L1 = column(data,28)
-        current_L2 = column(data,43)
-        current_L3 = column(data,58)
+        current_L1 = column(data,28, function=float)
+        current_L2 = column(data,43, function=float)
+        current_L3 = column(data,58, function=float)
         line_data.current = list([current_L1[i]+current_L2[i]+current_L3[i]
             for i in range(len(current_L1))])
         line_data.voltage = None
-        line_data.power_factor = column(data,14)
+        line_data.power_factor = column(data,14, function=float)
     else:
-        line_data.current = column(data,index+12)
-        line_data.voltage = column(data,index+13)
-        line_data.power_factor = column(data,index+14)
+        line_data.current = column(data,index+12, function=float)
+        line_data.voltage = column(data,index+13, function=float)
+        line_data.power_factor = column(data,index+14, function=float)
     line_data.shared_data = shared_data
     return line_data
 
 if __name__ == '__main__':
     file_name = random.choice(file_names)
     total = build_LineData(os.path.join(data_dir,file_name),0)
-    print(total.current)
+    print(total.active.power_neg)
