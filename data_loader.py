@@ -24,3 +24,4 @@ def load_all_power(line):
         file = os.path.join(ld.data_dir, file_name)
         data = ld.build_LineData(file, line)
         power += data.apparent.power_pos
+    return power

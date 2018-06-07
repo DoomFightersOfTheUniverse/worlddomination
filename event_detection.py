@@ -15,15 +15,15 @@ DIFF_THRESHOLD = 50.0
 def BCZ(data):
     return min(data) + OFFSET
 
-def ed_diff(data):
+def ed_diff(data, threshold=DIFF_THRESHOLD):
     events = []
     for i in range(1, len(data)):
         diff = data[i] - data[i - 1]
-        if abs(diff) > DIFF_THRESHOLD:
+        if abs(diff) > threshold:
             events.append((i,diff))
     return events
 
-class DataPart:
+class DataPart:#Event
     def __init__(self, start_time, data, threshold):
         self.start_time = start_time
         self.data = data
@@ -85,7 +85,7 @@ def plot(power, threshold, parts=None):
 if __name__ == '__main__':
     import data_loader
     line = data_loader.load_file(lines='random')
-    power = line.apparent.power_pos
+    power = data_loader.load_all_power(3) #line.apparent.power_pos
     threshold = min(power) + 10
 
     parts = ed_split_where_less_than_threshold(power, threshold)
