@@ -13,7 +13,7 @@ class LineData:
 def check_power(power):
     for p in power:
         if p < 0 or p > 7000:#TODO just guesses
-            raise Exception('Unexpected power: %s' % power)
+            raise Exception('Unexpected power: %s' % p)
     return power
 
 def check_energy(energy):
