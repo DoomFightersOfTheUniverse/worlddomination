@@ -4,16 +4,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
+from itertools import cycle
 
 #gives the power of the Base Consumption Zone, the background power that is
 #always used
 #ideas: Otsu's method
 # - minimum
-OFFSET = 15.0
+OFFSET = 10.0
 DIFF_THRESHOLD = 50.0
+REC_MIN_DISTANCE = 50
+REC_MIN_TIME = 5
+MIN_SLOPE = 30
 
 def BCZ(data):
     return min(data) + OFFSET
+
+class Event:
+    def __init__(self, start, data):
+        self.start = start
+        self.data = data
+        self.sub_events = []
+
+    def gen_time(self):
+        return range(self.start, self.start + len(self.data))
+
+    def gen_h_time(self):#human readable time: hours
+        return [i/60.0 for i in self.gen_time()]
 
 def ed_diff(data, threshold=DIFF_THRESHOLD):
     events = []
@@ -23,11 +39,58 @@ def ed_diff(data, threshold=DIFF_THRESHOLD):
             events.append((i,diff))
     return events
 
-class DataPart:#Event
-    def __init__(self, start_time, data, threshold):
-        self.start_time = start_time
-        self.data = data
-        self.threshold = threshold
+
+#"climbs" up and gives the start of the not that bad area
+def find_no_climb_start_and_end(data):
+    start = len(data)
+    end = 0
+
+    for i in range(1, len(data)):
+        if data[i] - data[i - 1] < MIN_SLOPE:
+            start = i
+            break
+
+    for i in range(len(data) - 1, 0, -1):
+        if data[i] - data[i - 1] > -MIN_SLOPE:
+            end = i - 1
+            break
+
+    if start < end:
+        return (start, end)
+    else:
+        return (0,0)
+
+def rec_split_by_baseline(event, max_split=5):
+    if max_split <= 0:
+        return
+
+    data = event.data
+
+    # make sure there are at least some values
+    if len(data) > REC_MIN_TIME:
+        start, end = find_no_climb_start_and_end(data)
+        if start >= end:
+            return
+
+        #remove the first and last value
+        min_val = min(data[start:end])
+        threshold = min_val + OFFSET #guess#TODO make dynamic
+
+        # Now make sure that there are big differences in the data
+        if max(data) - threshold > REC_MIN_DISTANCE:
+            event.sub_events = ed_split_where_less_than_threshold(data, threshold)
+
+            for e in event.sub_events:
+                e.start += event.start
+                rec_split_by_baseline(e, max_split=max_split-1) # recurisve magic happens here
+
+def ed_split_by_baseline(event):
+    #remove the first and last value
+    threshold = min(event.data[1:-1] + 10)#guess#TODO make dynamic
+    parts = ed_split_where_less_than_threshold(event.data, threshold)
+    for e in parts:
+        e.start += event.start
+    return parts
 
 def ed_split_where_less_than_threshold(data, threshold):
     parts = []
@@ -43,58 +106,44 @@ def ed_split_where_less_than_threshold(data, threshold):
         if state == 'find_end':
             if val <= threshold:
                 end = min(len(data), i + 1)
-                parts.append(DataPart(start, data[start:end], threshold))
+                parts.append(Event(start, data[start:end]))
                 start = None
                 new_state = 'find_start'
         state = new_state
     if state == 'find_end':
-        parts.append(DataPart(start, data[start:], threshold))
+        parts.append(Event(start, data[start:]))
     return parts
 
+def smooth(y, box_pts):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return y_smooth
 
-def plot(power, threshold, parts=None):
-    from itertools import cycle
-    cycol = cycle('bgrcmk')
+PLOT_COLORS = ['rm', 'gb', 'ck']
+def rec_plot(event, depth=0):
+    cols = PLOT_COLORS[depth % len(PLOT_COLORS)]
+    cycol = cycle(cols)
 
-    time = [i/60.0 for i in range(len(power))]
+    if depth == 0:
+        time = event.gen_h_time()
+        power = event.data
+        plt.plot(time, power, c='black')
 
-    power = np.array(power)
-    time = np.array(time)
+    for e in event.sub_events:
+        plt.plot(e.gen_h_time(), e.data, c=next(cycol))
+        rec_plot(e, depth=depth+1)
 
-    mask = power > threshold
-
-    points = np.array([time, power]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-
-    if threshold is not None:
-        plt.axhline(y=threshold, color='r', linestyle=':')
-
-    plt.plot(time,power)
-
-    if parts:
-        for part in parts:
-            t = [x / 60.0 for x in range(part.start_time,
-                part.start_time + len(part.data))]
-            plt.plot(t, part.data, c=next(cycol))
-    plt.show()
-
-    diff_power = [power[i + 1] - power[i] for i in range(len(power) - 1)]
-    plt.plot(time[:-1],diff_power)
-    plt.show()
+    if depth == 0:
+        plt.show()
 
 if __name__ == '__main__':
     import data_loader
-    line = data_loader.load_file(lines='random')
-    power = data_loader.load_all_power(3) #line.apparent.power_pos
-    threshold = min(power) + 10
+    power = data_loader.load_all_power(1) #line.apparent.power_pos
+    power = power[10*60:50*60] #look just at the beginning of the data
+    power = smooth(power, 4)
 
-    parts = ed_split_where_less_than_threshold(power, threshold)
-    for part in parts:
-        print('[%f, %f)' % (part.start_time / 60.0, (part.start_time + len(part.data)) / 60.0))
+    main_event = Event(0, power)
 
-    plot(power, threshold, parts=parts)
+    rec_split_by_baseline(main_event, max_split=2)
 
-    # events = ed_diff(power)
-    # for e in events:
-    #     time, diff = e
-    #     print('time=%d, diff=%d' % (e))
+    rec_plot(main_event)
