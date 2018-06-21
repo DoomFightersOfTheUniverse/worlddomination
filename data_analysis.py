@@ -3,6 +3,7 @@
 import os
 import csv
 import random
+import matplotlib.pyplot as plt
 from data_interface import *
 script_dir = str(os.path.dirname(os.path.abspath(__file__)))
 
@@ -69,4 +70,6 @@ def build_LineData(file_path, phase):
 if __name__ == '__main__':
     file_name = random.choice(file_names)
     total = build_LineData(os.path.join(data_dir,file_name),0)
-    print(total.active.power_neg)
+    plt.plot(total.shared_data.time, total.current)
+    print(total.shared_data.time, total.current)
+    print(total.current)
